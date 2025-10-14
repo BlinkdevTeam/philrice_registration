@@ -3,11 +3,11 @@
 type Participant = {
   id: number;
   unique_code: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  company: string;
-  designation: string;
-  event_name: string;
+  sex: string;
+  company_name: string;
 };
 
 export default function PrintIDCard({
@@ -15,7 +15,8 @@ export default function PrintIDCard({
 }: {
   participant: Participant;
 }) {
-  const initials = participant.full_name
+  const fullName = `${participant.first_name} ${participant.last_name}`.trim();
+  const initials = fullName
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -46,13 +47,11 @@ export default function PrintIDCard({
           {initials}
         </div>
 
-        {/* Name & Position */}
-        <h2 className="text-xl font-bold uppercase text-center">
-          {participant.full_name}
-        </h2>
-        <p className="text-sm text-center">
-          {participant.designation || "Participant"}
-        </p>
+        {/* Full Name */}
+        <h2 className="text-xl font-bold uppercase text-center">{fullName}</h2>
+
+        {/* Sex */}
+        <p className="text-sm text-center mt-1">{participant.sex}</p>
 
         {/* ID Number */}
         <div className="mt-3 bg-white text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
@@ -61,8 +60,8 @@ export default function PrintIDCard({
 
         {/* Footer */}
         <div className="mt-auto mb-2 text-xs text-center text-white opacity-90">
-          <p>{participant.company || "PhilRice"}</p>
-          <p>{participant.event_name}</p>
+          <p>{participant.company_name || "PhilRice"}</p>
+          <p>Walk-in Registration</p>
         </div>
       </div>
     </div>
