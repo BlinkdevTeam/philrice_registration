@@ -5,9 +5,9 @@ import { supabase } from "@/lib/supabaseClient";
 
 type WalkinForm = {
   email: string;
-  from_philrice: boolean;
-  submitting_paper: boolean;
-  joining_tour: boolean;
+  from_philrice?: boolean;
+  submitting_paper?: boolean;
+  joining_tour?: boolean;
 
   first_name: string;
   middle_name: string;
@@ -45,9 +45,9 @@ type WalkinForm = {
 export default function WalkinRegistration() {
   const [form, setForm] = useState<WalkinForm>({
     email: "",
-    from_philrice: false,
-    submitting_paper: false,
-    joining_tour: false,
+    from_philrice: undefined,
+    submitting_paper: undefined,
+    joining_tour: undefined,
 
     first_name: "",
     middle_name: "",
@@ -102,18 +102,26 @@ export default function WalkinRegistration() {
     try {
       const { error } = await supabase
         .from("philrice_walkin_registration")
-        .insert([form]);
+        .insert([
+          {
+            ...form,
+            from_philrice: !!form.from_philrice,
+            submitting_paper: !!form.submitting_paper,
+            joining_tour: !!form.joining_tour,
+          },
+        ]);
 
       if (error) {
         console.error(error);
         setMessage("❌ Registration failed. Please try again.");
       } else {
         setMessage("✅ Registration successful!");
+        // Reset form (keeping undefined for required dropdowns)
         setForm({
           email: "",
-          from_philrice: false,
-          submitting_paper: false,
-          joining_tour: false,
+          from_philrice: undefined,
+          submitting_paper: undefined,
+          joining_tour: undefined,
 
           first_name: "",
           middle_name: "",
@@ -194,15 +202,28 @@ export default function WalkinRegistration() {
                 ["joining_tour", "Joining the DA-PhilRice Tour?"],
               ] as [keyof WalkinForm, string][]
             ).map(([name, label]) => (
-              <label key={name} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name={name}
-                  checked={form[name] as boolean}
-                  onChange={handleChange}
-                  className="w-4 h-4"
-                />
+              <label key={name} className="flex flex-col space-y-1">
                 <span className="text-sm text-gray-700">{label}</span>
+                <select
+                  name={name}
+                  required
+                  value={
+                    form[name] === undefined || form[name] === null
+                      ? ""
+                      : String(form[name])
+                  }
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      [name]: e.target.value === "true",
+                    }))
+                  }
+                  className="border rounded-md p-2 text-sm bg-white"
+                >
+                  <option value="">Select an option...</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
               </label>
             ))}
           </div>
