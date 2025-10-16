@@ -7,6 +7,8 @@ import { saveAs } from "file-saver";
 import "../globals.css";
 import ParticipantList from "../components/ParticipantList";
 import { WalkinForm } from "../types/walkin"; // ✅ Correct type import
+import ParticipantStats from "../components/ParticipantStats";
+import AnalyticsOverview from "../components/AnalyticsOverview";
 
 export default function DashboardPage() {
   const [participants, setParticipants] = useState<WalkinForm[]>([]);
@@ -202,8 +204,8 @@ export default function DashboardPage() {
           {filterButton("sex", ["Male", "Female"])}
           {filterButton("age", [
             "30 years old and below",
-            "31–45",
-            "46–59",
+            "31-45",
+            "46-59",
             "60 years old and above",
           ])}
           {filterButton("indigenous", ["Yes", "No"])}
@@ -239,6 +241,10 @@ export default function DashboardPage() {
             </button>
           </div>
         </header>
+
+        <AnalyticsOverview participants={filteredParticipants} />
+
+        <ParticipantStats participants={filteredParticipants} />
 
         <ParticipantList
           filteredParticipants={filteredParticipants}
