@@ -2,48 +2,10 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
-type WalkinForm = {
-  email: string;
-  from_philrice?: boolean;
-  submitting_paper?: boolean;
-  joining_tour?: boolean;
-
-  first_name: string;
-  middle_name: string;
-  last_name: string;
-  name_extension: string;
-  sex: "Male" | "Female" | "";
-  age_bracket:
-    | ""
-    | "30 years old and below"
-    | "31-45"
-    | "46-59"
-    | "60 years old and above";
-  contact_number: string;
-  indigenous_group: boolean;
-  person_with_disability: boolean;
-
-  company_name: string;
-  company_address: string;
-  region: string;
-  affiliation_category: string;
-  nature_of_work: string;
-  designation_position: string;
-  company_email_or_website: string;
-  company_contact_number: string;
-
-  field_of_specialization: string;
-  registration_number: string;
-  license_number: string;
-  license_expiry_date: string;
-
-  arrival_date: string;
-  dietary_restrictions: boolean;
-};
+import { WalkinForm } from "../types/walkin"; // ✅ Shared type (create if not yet)
 
 export default function WalkinRegistration() {
-  const [form, setForm] = useState<WalkinForm>({
+  const initialForm: WalkinForm = {
     email: "",
     from_philrice: undefined,
     submitting_paper: undefined,
@@ -75,85 +37,62 @@ export default function WalkinRegistration() {
 
     arrival_date: "",
     dietary_restrictions: false,
-  });
+  };
 
+  const [form, setForm] = useState<WalkinForm>(initialForm);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Handle input and checkbox change
+  /** 🧠 Generic input handler (auto-detects type) */
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, type, value } = e.target;
-    if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
-      setForm((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
+    const checked = (e.target as HTMLInputElement).checked;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value === "true"
+          ? true
+          : value === "false"
+          ? false
+          : value,
+    }));
   };
 
-  // Submit form
+  /** 🔄 Reset the form */
+  const resetForm = () => setForm(initialForm);
+
+  /** 🚀 Submit form */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    try {
-      const { error } = await supabase
-        .from("philrice_walkin_registration")
-        .insert([
-          {
-            ...form,
-            from_philrice: !!form.from_philrice,
-            submitting_paper: !!form.submitting_paper,
-            joining_tour: !!form.joining_tour,
-          },
-        ]);
+    // ✅ Convert undefined booleans to false for Supabase
+    const preparedForm = {
+      ...form,
+      from_philrice: !!form.from_philrice,
+      submitting_paper: !!form.submitting_paper,
+      joining_tour: !!form.joining_tour,
+      indigenous_group: !!form.indigenous_group,
+      person_with_disability: !!form.person_with_disability,
+      dietary_restrictions: !!form.dietary_restrictions,
+    };
 
-      if (error) {
-        console.error(error);
-        setMessage("❌ Registration failed. Please try again.");
-      } else {
-        setMessage("✅ Registration successful!");
-        // Reset form (keeping undefined for required dropdowns)
-        setForm({
-          email: "",
-          from_philrice: undefined,
-          submitting_paper: undefined,
-          joining_tour: undefined,
+    const { error } = await supabase
+      .from("philrice_walkin_registration")
+      .insert([preparedForm]);
 
-          first_name: "",
-          middle_name: "",
-          last_name: "",
-          name_extension: "",
-          sex: "",
-          age_bracket: "",
-          contact_number: "",
-          indigenous_group: false,
-          person_with_disability: false,
-
-          company_name: "",
-          company_address: "",
-          region: "",
-          affiliation_category: "",
-          nature_of_work: "",
-          designation_position: "",
-          company_email_or_website: "",
-          company_contact_number: "",
-
-          field_of_specialization: "",
-          registration_number: "",
-          license_number: "",
-          license_expiry_date: "",
-
-          arrival_date: "",
-          dietary_restrictions: false,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage("❌ An unexpected error occurred.");
+    if (error) {
+      console.error(error);
+      setMessage("❌ Registration failed. Please try again.");
+    } else {
+      setMessage("✅ Registration successful!");
+      resetForm();
     }
 
     setLoading(false);
@@ -178,7 +117,7 @@ export default function WalkinRegistration() {
           </p>
         </div>
 
-        {/* EMAIL & BOOLEAN QUESTIONS */}
+        {/* GENERAL INFORMATION */}
         <section className="space-y-3 mb-6">
           <h2 className="font-semibold text-lg text-blue-700">
             General Information
@@ -195,32 +134,25 @@ export default function WalkinRegistration() {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {(
-              [
-                ["from_philrice", "Are you from PhilRice?"],
-                ["submitting_paper", "Will you be submitting a paper?"],
-                ["joining_tour", "Joining the DA-PhilRice Tour?"],
-              ] as [keyof WalkinForm, string][]
-            ).map(([name, label]) => (
+            {[
+              ["from_philrice", "Are you from PhilRice?"],
+              ["submitting_paper", "Will you be submitting a paper?"],
+              ["joining_tour", "Joining the DA-PhilRice Tour?"],
+            ].map(([name, label]) => (
               <label key={name} className="flex flex-col space-y-1">
                 <span className="text-sm text-gray-700">{label}</span>
                 <select
                   name={name}
-                  required
                   value={
-                    form[name] === undefined || form[name] === null
+                    form[name as keyof WalkinForm] === undefined
                       ? ""
-                      : String(form[name])
+                      : String(form[name as keyof WalkinForm])
                   }
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      [name]: e.target.value === "true",
-                    }))
-                  }
+                  onChange={handleChange}
+                  required
                   className="border rounded-md p-2 text-sm bg-white"
                 >
-                  <option value="">Select an option...</option>
+                  <option value="">Select...</option>
                   <option value="true">Yes</option>
                   <option value="false">No</option>
                 </select>
@@ -229,11 +161,12 @@ export default function WalkinRegistration() {
           </div>
         </section>
 
-        {/* PERSONAL INFORMATION */}
+        {/* PERSONAL INFO */}
         <section className="space-y-3 mb-6">
           <h2 className="font-semibold text-lg text-blue-700">
             Personal Information
           </h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               type="text"
@@ -295,8 +228,8 @@ export default function WalkinRegistration() {
               <option value="30 years old and below">
                 30 years old and below
               </option>
-              <option value="31-45">31-45</option>
-              <option value="46-59">46-59</option>
+              <option value="31-45">31–45</option>
+              <option value="46-59">46–59</option>
               <option value="60 years old and above">
                 60 years old and above
               </option>
@@ -338,11 +271,12 @@ export default function WalkinRegistration() {
           </div>
         </section>
 
-        {/* PROFESSIONAL AFFILIATION */}
+        {/* COMPANY INFO */}
         <section className="space-y-3 mb-6">
           <h2 className="font-semibold text-lg text-blue-700">
             Professional Affiliation
           </h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               type="text"
@@ -370,23 +304,29 @@ export default function WalkinRegistration() {
               className="p-3 border border-gray-300 rounded-lg bg-white"
             >
               <option value="">Select Region</option>
-              <option value="Region I">Region I</option>
-              <option value="Region II">Region II</option>
-              <option value="Region III">Region III</option>
-              <option value="Region IV-A">Region IV-A</option>
-              <option value="Region IV-B">Region IV-B</option>
-              <option value="Region V">Region V</option>
-              <option value="Region VI">Region VI</option>
-              <option value="Region VII">Region VII</option>
-              <option value="Region VIII">Region VIII</option>
-              <option value="Region IX">Region IX</option>
-              <option value="Region X">Region X</option>
-              <option value="Region XI">Region XI</option>
-              <option value="Region XII">Region XII</option>
-              <option value="Region XIII">Region XIII</option>
-              <option value="BARMM">BARMM</option>
-              <option value="CAR">CAR</option>
-              <option value="NCR">NCR</option>
+              {[
+                "Region I",
+                "Region II",
+                "Region III",
+                "Region IV-A",
+                "Region IV-B",
+                "Region V",
+                "Region VI",
+                "Region VII",
+                "Region VIII",
+                "Region IX",
+                "Region X",
+                "Region XI",
+                "Region XII",
+                "Region XIII",
+                "BARMM",
+                "CAR",
+                "NCR",
+              ].map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
             </select>
 
             <select
@@ -403,92 +343,12 @@ export default function WalkinRegistration() {
               <option value="Individual">Individual</option>
             </select>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              type="text"
-              name="nature_of_work"
-              placeholder="Nature of Work"
-              value={form.nature_of_work}
-              onChange={handleChange}
-              className="p-3 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="text"
-              name="designation_position"
-              placeholder="Designation / Position"
-              value={form.designation_position}
-              onChange={handleChange}
-              className="p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-
-          <input
-            type="text"
-            name="company_email_or_website"
-            placeholder="Company Email Address / Website"
-            value={form.company_email_or_website}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-
-          <input
-            type="text"
-            name="company_contact_number"
-            placeholder="Company Contact Number"
-            value={form.company_contact_number}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
         </section>
 
-        {/* PROFESSIONAL DETAILS */}
+        {/* ARRIVAL & DIETARY */}
         <section className="space-y-3 mb-6">
           <h2 className="font-semibold text-lg text-blue-700">
-            Professional Details
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              type="text"
-              name="field_of_specialization"
-              placeholder="Field of Specialization"
-              value={form.field_of_specialization}
-              onChange={handleChange}
-              className="p-3 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="text"
-              name="registration_number"
-              placeholder="Registration Number"
-              value={form.registration_number}
-              onChange={handleChange}
-              className="p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              type="text"
-              name="license_number"
-              placeholder="License Number"
-              value={form.license_number}
-              onChange={handleChange}
-              className="p-3 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="date"
-              name="license_expiry_date"
-              value={form.license_expiry_date}
-              onChange={handleChange}
-              className="p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-        </section>
-
-        {/* ARRIVAL DETAILS */}
-        <section className="space-y-3 mb-6">
-          <h2 className="font-semibold text-lg text-blue-700">
-            Arrival, Accommodation, and Dietary Restrictions
+            Arrival & Dietary Restrictions
           </h2>
           <input
             type="date"

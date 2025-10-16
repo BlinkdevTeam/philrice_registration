@@ -1,8 +1,8 @@
 "use client";
 
 type Participant = {
-  id: number;
-  unique_code: string;
+  id?: number; // ✅ make optional
+  unique_code?: string; // ✅ make optional
   first_name: string;
   last_name: string;
   email: string;
@@ -55,7 +55,7 @@ export default function PrintIDCard({
 
         {/* ID Number */}
         <div className="mt-3 bg-white text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
-          ID No: {participant.unique_code}
+          ID No: {participant.unique_code || "N/A"}
         </div>
 
         {/* Footer */}
