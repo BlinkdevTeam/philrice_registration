@@ -231,7 +231,7 @@ export default function DashboardPage() {
       {/* Main Dashboard */}
       <div className="flex-1 flex flex-col ml-72">
         <header className="bg-white p-4 shadow flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Walk-in Dashboard</h1>
+          <h1 className="text-xl font-semibold">Dashboard</h1>
           <div className="flex gap-2">
             <button
               onClick={handleExportCSV}
@@ -242,9 +242,9 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <AnalyticsOverview participants={filteredParticipants} />
-
         <ParticipantStats participants={filteredParticipants} />
+
+        <AnalyticsOverview participants={filteredParticipants} />
 
         <ParticipantList
           filteredParticipants={filteredParticipants}
