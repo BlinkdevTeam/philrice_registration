@@ -13,6 +13,7 @@ type ParticipantListProps = {
   selected: WalkinForm | null;
   setSelected: (p: WalkinForm | null) => void;
   handlePrint: () => void;
+  handleBulkPrint: () => void; // ✅ new prop
   printRef: React.RefObject<HTMLDivElement | null>;
 };
 
@@ -25,6 +26,7 @@ export default function ParticipantList({
   selected,
   setSelected,
   handlePrint,
+  handleBulkPrint,
   printRef,
 }: ParticipantListProps) {
   return (
@@ -80,6 +82,21 @@ export default function ParticipantList({
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* ✅ Bulk Print Button */}
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleBulkPrint}
+            disabled={selectedBatch.length === 0}
+            className={`px-4 py-2 rounded text-white ${
+              selectedBatch.length === 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            Bulk Print Selected ({selectedBatch.length})
+          </button>
         </div>
       </section>
 

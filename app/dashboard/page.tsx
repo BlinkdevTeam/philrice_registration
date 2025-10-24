@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
-import { saveAs } from "file-saver";
+import { useEffect, useState } from "react";
 import "../globals.css";
-import ParticipantList from "../components/ParticipantList";
-import { WalkinForm } from "../types/walkin"; // ✅ Correct type import
+import Sidebar from "../components/Sidebar";
 import ParticipantStats from "../components/ParticipantStats";
 import AnalyticsOverview from "../components/AnalyticsOverview";
 
 export default function DashboardPage() {
-  const [participants, setParticipants] = useState<WalkinForm[]>([]);
-  const [filteredParticipants, setFilteredParticipants] = useState<
-    WalkinForm[]
-  >([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState({
     sex: [] as string[],
     age: [] as string[],
@@ -24,239 +15,87 @@ export default function DashboardPage() {
     region: [] as string[],
   });
 
-  const [selected, setSelected] = useState<WalkinForm | null>(null);
-  const [selectedBatch, setSelectedBatch] = useState<WalkinForm[]>([]);
-  const router = useRouter();
-  const printRef = useRef<HTMLDivElement | null>(null); // ✅ allow null
-
-  // ✅ Check user session
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) router.push("/login");
-    };
-    checkUser();
-  }, [router]);
-
-  // ✅ Fetch participants
-  useEffect(() => {
-    const fetchParticipants = async () => {
-      const { data, error } = await supabase
-        .from("philrice_walkin_registration")
-        .select("*")
-        .order("inserted_at", { ascending: false });
-
-      if (!error && data) {
-        setParticipants(data as WalkinForm[]);
-        setFilteredParticipants(data as WalkinForm[]);
-      } else {
-        console.error(error);
-      }
-    };
-    fetchParticipants();
-  }, []);
-
-  // ✅ Toggle filter selection
   const toggleFilter = (
     category: keyof typeof selectedFilters,
     value: string
   ) => {
     setSelectedFilters((prev) => {
-      const current = prev[category];
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      return { ...prev, [category]: updated };
+      const exists = prev[category].includes(value);
+      return {
+        ...prev,
+        [category]: exists
+          ? prev[category].filter((v) => v !== value)
+          : [...prev[category], value],
+      };
     });
   };
 
-  // ✅ Filter logic
-  useEffect(() => {
-    const lower = searchTerm.toLowerCase();
-
-    const result = participants.filter((p) => {
-      const fullName = `${p.first_name} ${p.last_name}`.toLowerCase();
-
-      const matchesSearch =
-        fullName.includes(lower) ||
-        p.email.toLowerCase().includes(lower) ||
-        p.company_name?.toLowerCase().includes(lower);
-
-      const matchesSex =
-        selectedFilters.sex.length === 0 || selectedFilters.sex.includes(p.sex);
-
-      const matchesAge =
-        selectedFilters.age.length === 0 ||
-        selectedFilters.age.includes(p.age_bracket || "");
-
-      const matchesIndigenous =
-        selectedFilters.indigenous.length === 0 ||
-        selectedFilters.indigenous.some(
-          (val) =>
-            (val === "Yes" && p.indigenous_group === true) ||
-            (val === "No" && p.indigenous_group === false)
-        );
-
-      const matchesDisability =
-        selectedFilters.disability.length === 0 ||
-        selectedFilters.disability.some(
-          (val) =>
-            (val === "Yes" && p.person_with_disability === true) ||
-            (val === "No" && p.person_with_disability === false)
-        );
-
-      const matchesRegion =
-        selectedFilters.region.length === 0 ||
-        selectedFilters.region.includes(p.region || "");
-
-      return (
-        matchesSearch &&
-        matchesSex &&
-        matchesAge &&
-        matchesIndigenous &&
-        matchesDisability &&
-        matchesRegion
-      );
-    });
-
-    setFilteredParticipants(result);
-  }, [searchTerm, selectedFilters, participants]);
-
-  // ✅ Export CSV
-  const handleExportCSV = () => {
-    const csvRows = [
-      ["Full Name", "Email", "Sex", "Company", "Inserted At"],
-      ...filteredParticipants.map((p) => [
-        `"${p.first_name} ${p.last_name}"`,
-        `"${p.email}"`,
-        `"${p.sex}"`,
-        `"${p.company_name}"`,
-        `"${p.inserted_at}"`,
-      ]),
-    ];
-    const blob = new Blob([csvRows.map((r) => r.join(",")).join("\n")], {
-      type: "text/csv;charset=utf-8;",
-    });
-    saveAs(blob, "walkin_participants.csv");
-  };
-
-  // ✅ Batch select
-  const toggleSelect = (p: WalkinForm) => {
-    setSelectedBatch((prev) =>
-      prev.some((item) => item.id === p.id)
-        ? prev.filter((item) => item.id !== p.id)
-        : [...prev, p]
-    );
-  };
-
-  // ✅ Print selected ID
-  const handlePrint = () => {
-    if (printRef.current) {
-      const original = document.body.innerHTML;
-      document.body.innerHTML = printRef.current.innerHTML;
-      window.print();
-      document.body.innerHTML = original;
-      window.location.reload();
-    }
-  };
-
-  // ✅ Logout
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
-
-  // ✅ Filter button UI
-  const filterButton = (
-    category: keyof typeof selectedFilters,
-    options: string[]
-  ) => (
-    <div className="mb-5">
-      <h3 className="font-semibold text-gray-700 capitalize mb-2">
-        {category}
-      </h3>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt) => (
-          <button
-            key={opt}
-            onClick={() => toggleFilter(category, opt)}
-            className={`px-3 py-1 rounded-full border text-sm ${
-              selectedFilters[category].includes(opt)
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-gray-200 text-gray-700 border-gray-300"
-            }`}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
-    </div>
+  const [activeTab, setActiveTab] = useState<"analytics" | "participants">(
+    "analytics"
   );
 
-  // ✅ Layout
+  const handleLogout = () => {
+    window.location.href = "/login";
+  };
+
+  // --- Keep ParticipantStats fetching/logic as before ---
+  const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTotalParticipants = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/total-participant", {
+          cache: "no-store",
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.message || "Failed to fetch participants");
+        }
+
+        setTotal(data.total || 0);
+      } catch (err: unknown) {
+        if (err instanceof Error) setError(err.message);
+        else setError("Unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTotalParticipants();
+  }, []);
+
   return (
     <div className="min-h-screen flex bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r shadow-sm p-6 flex flex-col justify-between fixed h-screen overflow-y-auto">
-        <div>
-          <h2 className="text-xl font-bold mb-6 text-gray-800">Filters</h2>
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        selectedFilters={selectedFilters}
+        toggleFilter={toggleFilter}
+        handleLogout={handleLogout}
+      />
 
-          {filterButton("sex", ["Male", "Female"])}
-          {filterButton("age", [
-            "30 years old and below",
-            "31-45",
-            "46-59",
-            "60 years old and above",
-          ])}
-          {filterButton("indigenous", ["Yes", "No"])}
-          {filterButton("disability", ["Yes", "No"])}
-          {filterButton("region", [
-            "Region I",
-            "Region II",
-            "Region III",
-            "Region IV-A",
-            "CAR",
-            "NCR",
-          ])}
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="mt-8 bg-red-600 text-white py-2 rounded hover:bg-red-700 transition"
-        >
-          Logout
-        </button>
-      </aside>
-
-      {/* Main Dashboard */}
       <div className="flex-1 flex flex-col ml-72">
         <header className="bg-white p-4 shadow flex justify-between items-center">
           <h1 className="text-xl font-semibold">Dashboard</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={handleExportCSV}
-              className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700"
-            >
-              Export CSV
-            </button>
-          </div>
         </header>
 
-        <ParticipantStats participants={filteredParticipants} />
+        {loading ? (
+          <p className="p-6 text-gray-600">Loading...</p>
+        ) : error ? (
+          <p className="p-6 text-red-500">{error}</p>
+        ) : (
+          <div className="p-6 space-y-6">
+            {/* ✅ Participant summary */}
+            <ParticipantStats total={total} />
 
-        <AnalyticsOverview participants={filteredParticipants} />
-
-        <ParticipantList
-          filteredParticipants={filteredParticipants}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedBatch={selectedBatch}
-          toggleSelect={toggleSelect}
-          selected={selected}
-          setSelected={setSelected}
-          handlePrint={handlePrint}
-          printRef={printRef}
-        />
+            {/* ✅ Analytics overview reacts to filters */}
+            <AnalyticsOverview selectedFilters={selectedFilters} />
+          </div>
+        )}
       </div>
     </div>
   );
