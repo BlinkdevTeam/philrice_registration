@@ -209,10 +209,10 @@ export default function WalkinPage() {
             className="border p-2 rounded"
           >
             <option value="">Select Age Bracket</option>
-            <option value="18-25">18–25</option>
-            <option value="26-35">26–35</option>
-            <option value="36-45">36–45</option>
-            <option value="46+">46+</option>
+            <option value="30 y/o and below">30 y/o and below</option>
+            <option value="31-45 y/o">31-45 y/o</option>
+            <option value="46-59 y/o">46-59 y/o</option>
+            <option value="60 y/o and above">60 y/o and above</option>
           </select>
         </div>
 

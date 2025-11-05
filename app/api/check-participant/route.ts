@@ -1,58 +1,67 @@
 import { NextResponse } from "next/server";
 
-// ⚠️ Ignore SSL issues only for development/testing
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+interface ParticipantSearch {
+  email?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+}
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body: ParticipantSearch = await req.json();
+    const { email, first_name, middle_name, last_name } = body;
 
-    const res = await fetch(
-      "https://ugnaypalay.philrice.gov.ph:441/csd/37th/api/getParticipants",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
-        },
-        body: JSON.stringify(body),
-      }
-    );
-
-    const text = await res.text();
-
-    if (!res.ok) {
-      console.error("❌ External API Error:", res.status, text);
+    if (!email && !first_name && !middle_name && !last_name) {
       return NextResponse.json(
-        {
-          success: false,
-          status: res.status,
-          message: `API Error: ${res.statusText}`,
-          rawResponse: text,
-        },
-        { status: res.status }
+        { error: "Missing search parameters" },
+        { status: 400 }
       );
     }
 
-    try {
-      const data = JSON.parse(text);
-      return NextResponse.json(data);
-    } catch (jsonError) {
-      console.error("⚠️ Response was not JSON:", text);
-      return NextResponse.json({
-        success: false,
-        message: "Response is not valid JSON.",
-        rawResponse: text,
-      });
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+
+    if (!apiUrl || !apiKey) {
+      console.error("❌ Missing environment variables");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
     }
-  } catch (error) {
-    console.error("❌ Proxy API Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Internal server error.",
+
+    const endpoint = `${apiUrl}/get-participant`;
+
+    const backendRes = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
       },
+      body: JSON.stringify({
+        email,
+        first_name,
+        middle_name,
+        last_name,
+      }),
+    });
+
+    if (!backendRes.ok) {
+      const errorText = await backendRes.text();
+      console.error("❌ Backend error:", backendRes.status, errorText);
+      return NextResponse.json(
+        { error: "Backend API failed", details: errorText },
+        { status: backendRes.status }
+      );
+    }
+
+    const data = await backendRes.json();
+    return NextResponse.json(data);
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    console.error("❌ Server crashed in /api/check-participant:", error);
+    return NextResponse.json(
+      { error: error.message || "Internal Server Error" },
       { status: 500 }
     );
   }

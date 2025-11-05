@@ -39,17 +39,7 @@ type DailyDataItem = {
   total: number;
 };
 
-type AnalyticsProps = {
-  selectedFilters: {
-    sex: string[];
-    age: string[];
-    indigenous: string[];
-    disability: string[];
-    region: string[];
-  };
-};
-
-export default function AnalyticsOverview({ selectedFilters }: AnalyticsProps) {
+export default function AnalyticsOverview() {
   const [data, setData] = useState<TotalData>({
     maleCount: 0,
     femaleCount: 0,
@@ -65,16 +55,10 @@ export default function AnalyticsOverview({ selectedFilters }: AnalyticsProps) {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchTotals = async () => {
+    const fetchAnalytics = async () => {
       try {
-        // Send filters to the backend API
-        const query = new URLSearchParams();
-        Object.entries(selectedFilters).forEach(([key, arr]) =>
-          arr.forEach((val) => query.append(key, val))
-        );
-
-        // Fetch total participant data with filters applied
-        const res = await fetch(`/api/total-participant?${query.toString()}`, {
+        // Fetch total participant data (no filters)
+        const res = await fetch(`/api/total-participant`, {
           cache: "no-store",
         });
         const json = await res.json();
@@ -91,14 +75,12 @@ export default function AnalyticsOverview({ selectedFilters }: AnalyticsProps) {
           });
         }
 
-        // Fetch per-day attendance with filters applied
-        const dailyRes = await fetch(
-          `/api/participant-attended?${query.toString()}`,
-          {
-            cache: "no-store",
-          }
-        );
+        // Fetch per-day attendance (no filters)
+        const dailyRes = await fetch(`/api/participant-attended`, {
+          cache: "no-store",
+        });
         const dailyJson = await dailyRes.json();
+
         if (dailyJson.success && dailyJson.perDaySummary) {
           const formattedDaily: DailyDataItem[] = Object.entries(
             dailyJson.perDaySummary
@@ -122,8 +104,8 @@ export default function AnalyticsOverview({ selectedFilters }: AnalyticsProps) {
       }
     };
 
-    fetchTotals();
-  }, [selectedFilters]); // Re-fetch whenever filters change
+    fetchAnalytics();
+  }, []);
 
   if (loading) {
     return (
@@ -283,7 +265,7 @@ export default function AnalyticsOverview({ selectedFilters }: AnalyticsProps) {
         </div>
       </div>
 
-      {/* 📊 Total Attendance Per Day (Stacked Column Chart) */}
+      {/* 📊 Total Attendance Per Day */}
       <div>
         <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center">
           Total Attendees Per Day
@@ -299,22 +281,8 @@ export default function AnalyticsOverview({ selectedFilters }: AnalyticsProps) {
               <YAxis />
               <Tooltip />
               <Legend verticalAlign="bottom" height={36} />
-              {/* Male attendees */}
-              <Bar
-                dataKey="male"
-                name="Male"
-                stackId="a"
-                fill="#3B82F6"
-                radius={[0, 0, 0, 0]}
-              />
-              {/* Female attendees */}
-              <Bar
-                dataKey="female"
-                name="Female"
-                stackId="a"
-                fill="#EC4899"
-                radius={[8, 8, 0, 0]}
-              />
+              <Bar dataKey="male" name="Male" stackId="a" fill="#3B82F6" />
+              <Bar dataKey="female" name="Female" stackId="a" fill="#EC4899" />
             </BarChart>
           </ResponsiveContainer>
         </div>

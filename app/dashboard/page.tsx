@@ -1,35 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../globals.css";
 import Sidebar from "../components/Sidebar";
 import ParticipantStats from "../components/ParticipantStats";
 import AnalyticsOverview from "../components/AnalyticsOverview";
+import ParticipantList from "../components/ParticipantList";
+import { WalkinForm } from "../types/walkin";
 
 export default function DashboardPage() {
-  const [selectedFilters, setSelectedFilters] = useState({
-    sex: [] as string[],
-    age: [] as string[],
-    indigenous: [] as string[],
-    disability: [] as string[],
-    region: [] as string[],
-  });
-
-  const toggleFilter = (
-    category: keyof typeof selectedFilters,
-    value: string
-  ) => {
-    setSelectedFilters((prev) => {
-      const exists = prev[category].includes(value);
-      return {
-        ...prev,
-        [category]: exists
-          ? prev[category].filter((v) => v !== value)
-          : [...prev[category], value],
-      };
-    });
-  };
-
   const [activeTab, setActiveTab] = useState<"analytics" | "participants">(
     "analytics"
   );
@@ -38,11 +17,19 @@ export default function DashboardPage() {
     window.location.href = "/login";
   };
 
-  // --- Keep ParticipantStats fetching/logic as before ---
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<WalkinForm[]>([]);
+  const [filteredParticipants, setFilteredParticipants] = useState<
+    WalkinForm[]
+  >([]);
+  const printRef = useRef<HTMLDivElement | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selected, setSelected] = useState<WalkinForm | null>(null);
+
+  // ✅ Fetch total participants
   useEffect(() => {
     const fetchTotalParticipants = async () => {
       try {
@@ -51,36 +38,102 @@ export default function DashboardPage() {
           cache: "no-store",
         });
         const data = await res.json();
-
-        if (!data.success) {
+        if (!data.success)
           throw new Error(data.message || "Failed to fetch participants");
-        }
-
         setTotal(data.total || 0);
       } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message);
-        else setError("Unexpected error occurred");
+        setError(
+          err instanceof Error ? err.message : "Unexpected error occurred"
+        );
       } finally {
         setLoading(false);
       }
     };
-
     fetchTotalParticipants();
   }, []);
 
+  // ✅ Fetch all participants
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      try {
+        const res = await fetch("/api/participants", { cache: "no-store" });
+        const json = await res.json();
+
+        if (Array.isArray(json)) {
+          setParticipants(json);
+          setFilteredParticipants(json);
+        } else if (json.success && Array.isArray(json.data)) {
+          setParticipants(json.data);
+          setFilteredParticipants(json.data);
+        }
+      } catch (error) {
+        console.error("Error fetching participants:", error);
+      }
+    };
+
+    fetchParticipants();
+  }, []);
+
+  // ✅ Search handler
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      setFilteredParticipants(participants);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/check-participant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: searchTerm.includes("@") ? searchTerm : undefined,
+          first_name: !searchTerm.includes("@")
+            ? searchTerm.split(" ")[0]
+            : undefined,
+          last_name: !searchTerm.includes("@")
+            ? searchTerm.split(" ")[1]
+            : undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("❌ Search failed", await res.text());
+        setFilteredParticipants([]);
+        return;
+      }
+
+      const data = await res.json();
+      const participantsData = Array.isArray(data)
+        ? data
+        : data.data
+        ? data.data
+        : [data];
+
+      setFilteredParticipants(participantsData);
+    } catch (err) {
+      console.error("❌ Search error:", err);
+    }
+  };
+
+  // ✅ Print handler (only ID area will print)
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // ✅ Render
   return (
     <div className="min-h-screen flex bg-gray-100">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        selectedFilters={selectedFilters}
-        toggleFilter={toggleFilter}
         handleLogout={handleLogout}
       />
 
       <div className="flex-1 flex flex-col ml-72">
         <header className="bg-white p-4 shadow flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Dashboard</h1>
+          <h1 className="text-xl font-semibold">
+            {activeTab === "analytics" ? "Analytics Overview" : "Participants"}
+          </h1>
         </header>
 
         {loading ? (
@@ -89,11 +142,23 @@ export default function DashboardPage() {
           <p className="p-6 text-red-500">{error}</p>
         ) : (
           <div className="p-6 space-y-6">
-            {/* ✅ Participant summary */}
-            <ParticipantStats total={total} />
-
-            {/* ✅ Analytics overview reacts to filters */}
-            <AnalyticsOverview selectedFilters={selectedFilters} />
+            {activeTab === "analytics" ? (
+              <>
+                <ParticipantStats total={total} />
+                <AnalyticsOverview />
+              </>
+            ) : (
+              <ParticipantList
+                filteredParticipants={filteredParticipants}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                handleSearch={handleSearch}
+                selected={selected}
+                setSelected={setSelected}
+                handlePrint={handlePrint}
+                printRef={printRef}
+              />
+            )}
           </div>
         )}
       </div>

@@ -10,7 +10,7 @@ export type WalkinForm = {
   lastName: string;
   extName: string;
   sex: string;
-  ageBracket: "18-25" | "26-35" | "36-45" | "46-59" | "60 and above" | "";
+  ageBracket: "30 y/o and below" | "31-45 y/o" | "46-59 y/o" | "60 y/o and above" | "" ;
   isIndigenous: "Yes" | "No";
   indigenousGroup: string;
   withDisability: "Yes" | "No";
