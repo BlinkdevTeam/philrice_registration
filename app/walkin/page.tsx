@@ -168,7 +168,7 @@ export default function WalkinPage() {
             {/* 🧾 FORM START */}
             <form
               onSubmit={handleSubmit}
-              className="space-y-4 mt-2 sm:mt-4 text-sm sm:text-base"
+              className="space-y-4 mt-2 sm:mt-4 text-sm sm:text-base text-black"
             >
               {/* Email */}
               <input
