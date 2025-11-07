@@ -77,7 +77,30 @@ export default function DashboardPage() {
       <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-6 bg-white shadow-inner">
         {selected ? (
           <>
-            <PrintIDCard participant={selected} />
+            {selected && (
+              <PrintIDCard
+                participant={{
+                  email: selected.email,
+                  isPhilriceEmp: "No",
+                  firstName: selected.full_name.split(" ")[0] || "",
+                  midName: "",
+                  lastName:
+                    selected.full_name.split(" ").slice(1).join(" ") || "",
+                  extName: "",
+                  sex: "",
+                  ageBracket: "",
+                  isIndigenous: "No",
+                  indigenousGroup: "",
+                  withDisability: "No",
+                  disability: "",
+                  contactNo: "",
+                  id: selected.id,
+                  unique_code: selected.unique_code,
+                  inserted_at: selected.inserted_at,
+                }}
+              />
+            )}
+
             <button
               onClick={handlePrint}
               className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
