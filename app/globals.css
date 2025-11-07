@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+/* ---------------- Font Faces ---------------- */
+@font-face {
+  font-family: "Aller";
+  src: url("/fonts/aller.regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Aller";
+  src: url("/fonts/aller.bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avignon";
+  src: url("/fonts/avignon.bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
 :root {
   --background: #ededed;
   --foreground: #ededed;
@@ -22,8 +44,19 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+  font-family: "Aller", Arial, Helvetica, sans-serif;
+  }
+  
+  /* ---------------- Headings ---------------- */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Avignon", "Times New Roman", serif;
+    font-weight: 700;
+  }
 
 /* ====== FIXED ID CARD PRINT SIZE ====== */
 .id-card {
