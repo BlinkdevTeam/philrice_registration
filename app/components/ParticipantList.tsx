@@ -117,7 +117,7 @@ export default function ParticipantList({
 
       {/* Right section: Print ID preview */}
       {selected && (
-        <section className="w-1/3 bg-white flex flex-col items-center justify-center shadow-inner">
+        <section className="w-1/3 bg-white flex flex-col items-center justify-center shadow-inner py-8">
           <div ref={printRef} className="print-area">
             <PrintIDCard participant={selected} />
           </div>
