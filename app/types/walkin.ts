@@ -1,6 +1,6 @@
 export type WalkinForm = {
   id?: number; // Auto-generated from backend
-  unique_code?: string; // Auto-generated unique ID
+  qrdata?: string; // Auto-generated unique ID
 
   // Basic Information
   email: string;

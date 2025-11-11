@@ -149,11 +149,13 @@ export default function WalkinPage() {
         </div>
       )}
 
-      <section
-        className="relative w-full min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-white
-           bg-cover bg-center bg-no-repeat overflow-hidden"
-      >
-        <div className="bg-white grid grid-cols-1 lg:grid-cols-2 max-w-[1000px] w-full h-full mx-auto shadow-2xl rounded-2xl overflow-hidden">
+      <section className="relative w-full min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+          style={{ backgroundImage: "url('/assets/4886408.jpg')" }}
+        ></div>
+        <div className="relative z-10 bg-white grid grid-cols-1 lg:grid-cols-2 max-w-[1000px] w-full h-full mx-auto shadow-2xl rounded-2xl overflow-hidden">
           {/* LEFT COLUMN - FORM */}
           <div className="p-6 sm:p-10 md:p-12 flex flex-col justify-center">
             <h1 className="text-[28px] sm:text-[36px] font-bold text-[#006872]">

@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import "../globals.css";
-import Sidebar from "../components/Sidebar";
-import ParticipantStats from "../components/ParticipantStats";
 import AnalyticsOverview from "../components/AnalyticsOverview";
 import ParticipantList from "../components/ParticipantList";
 import { WalkinForm } from "../types/walkin";
@@ -29,7 +27,7 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selected, setSelected] = useState<WalkinForm | null>(null);
 
-  // ✅ Fetch total participants
+  // Fetch total participants
   useEffect(() => {
     const fetchTotalParticipants = async () => {
       try {
@@ -52,29 +50,7 @@ export default function DashboardPage() {
     fetchTotalParticipants();
   }, []);
 
-  // ✅ Fetch all participants
-  useEffect(() => {
-    const fetchParticipants = async () => {
-      try {
-        const res = await fetch("/api/participants", { cache: "no-store" });
-        const json = await res.json();
-
-        if (Array.isArray(json)) {
-          setParticipants(json);
-          setFilteredParticipants(json);
-        } else if (json.success && Array.isArray(json.data)) {
-          setParticipants(json.data);
-          setFilteredParticipants(json.data);
-        }
-      } catch (error) {
-        console.error("Error fetching participants:", error);
-      }
-    };
-
-    fetchParticipants();
-  }, []);
-
-  // ✅ Search handler
+  // Search handler
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       setFilteredParticipants(participants);
@@ -115,53 +91,82 @@ export default function DashboardPage() {
     }
   };
 
-  // ✅ Print handler (only ID area will print)
+  // Print handler
   const handlePrint = () => {
     window.print();
   };
 
-  // ✅ Render
   return (
-    <div className="min-h-screen flex bg-gray-100">
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        handleLogout={handleLogout}
-      />
-
-      <div className="flex-1 flex flex-col ml-72">
-        <header className="bg-white p-4 shadow flex justify-between items-center">
-          <h1 className="text-xl font-semibold">
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* ✅ Top navigation bar */}
+      <header className="flex justify-between items-center px-6 py-4">
+        <div className="flex items-center gap-4">
+          <img
+            src="/assets/UgnayPalay_Logo.png"
+            alt="Ugnay Palay Logo"
+            className="h-10 w-auto"
+          />
+          <h1 className="text-2 xl font-semibold text-[#006872] w-64">
             {activeTab === "analytics" ? "Analytics Overview" : "Participants"}
           </h1>
-        </header>
+        </div>
 
+        <div className="bg-white flex items-center gap-4 px-4 py-2 rounded-full">
+          {/* Tabs */}
+          <button
+            className={`px-4 py-2 rounded ${
+              activeTab === "analytics"
+                ? "bg-[#F58A1F] text-white rounded-full"
+                : "text-gray-700"
+            }`}
+            onClick={() => setActiveTab("analytics")}
+          >
+            Analytics
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${
+              activeTab === "participants"
+                ? "bg-[#F58A1F] text-white rounded-full"
+                : "text-gray-700"
+            }`}
+            onClick={() => setActiveTab("participants")}
+          >
+            Participants
+          </button>
+        </div>
+        {/* Logout */}
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </header>
+
+      {/* Content */}
+      <main className="flex-1 p-6">
         {loading ? (
-          <p className="p-6 text-gray-600">Loading...</p>
+          <p className="text-gray-600">Loading...</p>
         ) : error ? (
-          <p className="p-6 text-red-500">{error}</p>
+          <p className="text-red-500">{error}</p>
+        ) : activeTab === "analytics" ? (
+          <>
+            {/* <ParticipantStats total={total} /> */}
+            <AnalyticsOverview />
+          </>
         ) : (
-          <div className="p-6 space-y-6">
-            {activeTab === "analytics" ? (
-              <>
-                <ParticipantStats total={total} />
-                <AnalyticsOverview />
-              </>
-            ) : (
-              <ParticipantList
-                filteredParticipants={filteredParticipants}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                handleSearch={handleSearch}
-                selected={selected}
-                setSelected={setSelected}
-                handlePrint={handlePrint}
-                printRef={printRef}
-              />
-            )}
-          </div>
+          <ParticipantList
+            filteredParticipants={filteredParticipants}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            handleSearch={handleSearch}
+            selected={selected}
+            setSelected={setSelected}
+            handlePrint={handlePrint}
+            printRef={printRef}
+          />
         )}
-      </div>
+      </main>
     </div>
   );
 }

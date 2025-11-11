@@ -40,31 +40,34 @@ export default function ParticipantList({
     <main className="flex flex-1 overflow-hidden">
       {/* Left section: Table */}
       <section className="w-2/3 p-6 overflow-auto">
-        <div className="flex mb-4 gap-2">
-          <input
-            type="text"
-            placeholder="Search name or email"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSearchWithLoading();
-              }
-            }}
-            className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-          />
-          <button
-            onClick={handleSearchWithLoading}
-            disabled={loading}
-            className={`px-4 py-2 rounded text-sm text-white ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {loading ? "Searching..." : "Search"}
-          </button>
+        <div className="flex justify-between items-center mb-4 gap-2">
+          <h1 className="text-xl text-[#F58A1F]">Participant List</h1>
+          <div className="flex gap-6">
+            <input
+              type="text"
+              placeholder="Search name or email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearchWithLoading();
+                }
+              }}
+              className="border border-gray-300 rounded-full px-3 py-2 text-sm w-[320px]"
+            />
+            <button
+              onClick={handleSearchWithLoading}
+              disabled={loading}
+              className={`px-4 py-2 rounded-full text-sm text-white ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#006872] hover:bg-[#00565c]"
+              }`}
+            >
+              {loading ? "Searching..." : "Search Now"}
+            </button>
+          </div>
         </div>
 
         <div className="overflow-auto bg-white rounded shadow">
@@ -90,7 +93,7 @@ export default function ParticipantList({
                     <td className="p-3 text-center">
                       <button
                         onClick={() => setSelected(p)}
-                        className="text-blue-600 hover:underline"
+                        className="text-[#F58A1F] hover:underline cursor-pointer"
                       >
                         View ID
                       </button>
@@ -121,7 +124,7 @@ export default function ParticipantList({
 
           <button
             onClick={handlePrint}
-            className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+            className="mt-6 bg-[#006872] text-white px-6 py-2 rounded hover:bg-[#00565c]"
           >
             Print ID
           </button>
