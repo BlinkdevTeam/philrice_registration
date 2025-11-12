@@ -95,7 +95,7 @@ export default function DashboardPage() {
                   disability: "",
                   contactNo: "",
                   id: selected.id,
-                  unique_code: selected.unique_code,
+                  qrdata: selected.unique_code,
                   inserted_at: selected.inserted_at,
                 }}
               />
