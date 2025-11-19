@@ -83,34 +83,39 @@ export default function WalkinPage() {
       const result = await response.json();
       console.log("✅ API Response:", result);
 
-      if (result.success) {
-        // ✅ Display success message
-        setSuccessData({
-          message: result.message,
-          id: result.id,
-          qrdata: result.qrdata,
-        });
+      // if (result.success) {
+      //   setSuccessData({
+      //     message: result.message,
+      //     id: result.id,
+      //     qrdata: result.qrdata,
+      //   });
 
-        // ✅ Reset form
-        setFormData({
-          email: "",
-          isPhilriceEmp: "No",
-          firstName: "",
-          midName: "",
-          lastName: "",
-          extName: "",
-          sex: "",
-          ageBracket: "",
-          isIndigenous: "No",
-          indigenousGroup: "",
-          withDisability: "No",
-          disability: "",
-          contactNo: "",
-          philriceName: "",
-          philriceStation: "",
-          philriceUnit: "",
-          affiliationName: "",
-        });
+      //   setFormData({
+      //     email: "",
+      //     isPhilriceEmp: "No",
+      //     firstName: "",
+      //     midName: "",
+      //     lastName: "",
+      //     extName: "",
+      //     sex: "",
+      //     ageBracket: "",
+      //     isIndigenous: "No",
+      //     indigenousGroup: "",
+      //     withDisability: "No",
+      //     disability: "",
+      //     contactNo: "",
+      //     philriceName: "",
+      //     philriceStation: "",
+      //     philriceUnit: "",
+      //     affiliationName: "",
+      //   });
+      // }
+
+      if (result.success) {
+        // Redirect to QR ID generator
+        window.location.href = `https://ugnaypalay.philrice.gov.ph:441/csd/37th/generate-id/${result.qrdata}`;
+
+        return; // stop execution
       } else {
         alert(`⚠️ ${result.message || "Validation failed."}`);
       }
@@ -131,16 +136,38 @@ export default function WalkinPage() {
             <h2 className="text-xl font-bold text-[#007831] mb-3">
               Registration Successful!
             </h2>
+
             <p className="text-gray-700 mb-1">{successData.message}</p>
+
             <p className="text-sm text-gray-600">
               <strong>Participant ID:</strong> {successData.id}
             </p>
-            <p className="text-sm text-gray-600 mb-4">
-              <strong>QR Code:</strong> {successData.qrdata}
-            </p>
+
+            {/* QR CODE IMAGE */}
+            <div className="flex flex-col items-center gap-2 mb-4 mt-3">
+              <strong className="text-sm text-gray-600">QR Code:</strong>
+
+              {successData.qrdata.startsWith("data:image") ? (
+                <Image
+                  src={successData.qrdata}
+                  alt="QR Code"
+                  width={180}
+                  height={180}
+                  className="border border-gray-300 rounded p-1"
+                />
+              ) : (
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                    successData.qrdata
+                  )}`}
+                  alt="QR Code"
+                  className="border border-gray-300 rounded p-1"
+                />
+              )}
+            </div>
 
             <button
-              onClick={() => setSuccessData(null)} // ✅ closes modal
+              onClick={() => setSuccessData(null)}
               className="bg-[#007831] text-white px-4 py-2 rounded hover:bg-[#00642a] w-full"
             >
               Close
