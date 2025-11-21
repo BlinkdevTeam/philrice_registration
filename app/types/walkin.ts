@@ -26,4 +26,7 @@ export type WalkinForm = {
   affiliationName?: string;
 
   inserted_at?: string; // Optional timestamp
+
+  // Added dayAttended for time-in
+  dayAttended?: string; // e.g., "2025-11-21"
 };

@@ -115,7 +115,7 @@ export default function AnalyticsOverview() {
   return (
     <>
       <div className="flex flex-col">
-        <div className="flex w-full h-full justify-evenly items-center gap-6">
+        <div className="flex w-full h-full justify-evenly items-start gap-6">
           {/* Top summary cards */}
           <div className="grid grid-cols-2 gap-6 max-w-full w-full">
             <div className="bg-[#F58A1F] h-full flex flex-col justify-center items-center rounded-3xl shadow-lg p-6 text-center border border-gray-200">

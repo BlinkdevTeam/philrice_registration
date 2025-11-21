@@ -114,7 +114,7 @@ export default function DashboardPage() {
         <div className="bg-white flex items-center gap-4 px-4 py-2 rounded-full">
           {/* Tabs */}
           <button
-            className={`px-4 py-2 rounded ${
+            className={`px-4 py-2 rounded cursor-pointer ${
               activeTab === "analytics"
                 ? "bg-[#F58A1F] text-white rounded-full"
                 : "text-gray-700"
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             Analytics
           </button>
           <button
-            className={`px-4 py-2 rounded ${
+            className={`px-4 py-2 rounded cursor-pointer ${
               activeTab === "participants"
                 ? "bg-[#F58A1F] text-white rounded-full"
                 : "text-gray-700"

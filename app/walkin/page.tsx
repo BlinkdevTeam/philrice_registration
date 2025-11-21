@@ -83,36 +83,7 @@ export default function WalkinPage() {
       const result = await response.json();
       console.log("✅ API Response:", result);
 
-      // if (result.success) {
-      //   setSuccessData({
-      //     message: result.message,
-      //     id: result.id,
-      //     qrdata: result.qrdata,
-      //   });
-
-      //   setFormData({
-      //     email: "",
-      //     isPhilriceEmp: "No",
-      //     firstName: "",
-      //     midName: "",
-      //     lastName: "",
-      //     extName: "",
-      //     sex: "",
-      //     ageBracket: "",
-      //     isIndigenous: "No",
-      //     indigenousGroup: "",
-      //     withDisability: "No",
-      //     disability: "",
-      //     contactNo: "",
-      //     philriceName: "",
-      //     philriceStation: "",
-      //     philriceUnit: "",
-      //     affiliationName: "",
-      //   });
-      // }
-
       if (result.success) {
-        // Redirect to QR ID generator
         window.location.href = `https://ugnaypalay.philrice.gov.ph:441/csd/37th/generate-id/${result.qrdata}`;
 
         return; // stop execution
