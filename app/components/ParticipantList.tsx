@@ -50,11 +50,13 @@ export default function ParticipantList({
         });
 
         if (!response.ok) {
+          alert(response.status);
           throw new Error(`HTTP error: ${response.status}`);
         }
 
         const result = await response.json();
-        console.log(result);
+        console.log("result", result);
+        alert(result.message);
 
       } catch (error) {
         console.error("Error:", error);
