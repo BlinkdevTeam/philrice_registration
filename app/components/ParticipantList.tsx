@@ -36,6 +36,35 @@ export default function ParticipantList({
     }
   };
 
+  const handleTimeIn = (qr: any) => {
+    console.log("qr", qr)
+    const fetchParticipant = async () => {
+      try {
+        const response = await fetch("/api/time-in", {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ qrcode: qr }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(result);
+
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchParticipant();
+  };
+
+
   return (
     <main className="flex flex-1 overflow-hidden">
       {/* Left section: Table */}
@@ -78,6 +107,7 @@ export default function ParticipantList({
                 <th className="p-3 text-left">Email</th>
                 <th className="p-3 text-left">Sex</th>
                 <th className="p-3 text-center">Action</th>
+                <th className="p-3 text-center">Time In</th>
               </tr>
             </thead>
             <tbody>
@@ -96,6 +126,14 @@ export default function ParticipantList({
                         className="text-[#F58A1F] hover:underline cursor-pointer"
                       >
                         View ID
+                      </button>
+                    </td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => handleTimeIn(p.qrdata)}
+                        className="text-[#F58A1F] hover:underline cursor-pointer"
+                      >
+                        Time In
                       </button>
                     </td>
                   </tr>

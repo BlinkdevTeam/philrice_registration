@@ -23,6 +23,10 @@ type DailyDataItem = {
   total: number;
 };
 
+type AllEventDate = [
+
+] 
+
 export default function AnalyticsOverview() {
   const [data, setData] = useState<TotalData>({
     maleCount: 0,
@@ -38,6 +42,8 @@ export default function AnalyticsOverview() {
   const [dailyData, setDailyData] = useState<DailyDataItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [allEventDate, setAllEventDate] = useState<AllEventDate[]>([])
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
@@ -45,6 +51,7 @@ export default function AnalyticsOverview() {
           cache: "no-store",
         });
         const json = await res.json();
+
         if (json.success) {
           setData({
             maleCount: json.maleCount ?? 0,
@@ -61,7 +68,11 @@ export default function AnalyticsOverview() {
         const dailyRes = await fetch(`/api/participant-attended`, {
           cache: "no-store",
         });
+
+
+
         const dailyJson = await dailyRes.json();
+
         if (dailyJson.success && dailyJson.perDaySummary) {
           const formattedDaily: DailyDataItem[] = Object.entries(
             dailyJson.perDaySummary
@@ -84,6 +95,29 @@ export default function AnalyticsOverview() {
     };
     fetchAnalytics();
   }, []);
+
+  // useEffect(() => {
+    
+  //   const fetchAllDailyEvent = async () => {
+  //     const dailyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/allParticipants`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Accept": "application/json",
+  //         "Content-Type": "application/json",
+  //         "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
+  //       },
+  //       cache: "no-store",
+  //       body: JSON.stringify({
+  //         date: "2025-11-24",
+  //       }),
+  //     });
+
+
+  //     console.log("dailyRes", dailyRes)
+  //   }
+
+  //   fetchAllDailyEvent();
+  // },[])
 
   if (loading)
     return (
